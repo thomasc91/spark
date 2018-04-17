@@ -1,0 +1,38 @@
+Steps for installing Spark
+
+sudo apt-get update
+sudo apt-get install default-jdk
+
+install scala
+sudo apt-get install scala
+
+Download spark from apache website
+
+Unzip and move to /usr/lib/ with
+
+tar xzvf spark-2.3.0-bin-hadoop2.7.tgz
+
+add java and spark paths to bashrc
+
+sudo nano ~/.bashrc
+
+Run spark 
+sudo ./spark-shell --master[4]
+
+https://www.tutorialkart.com/apache-spark/scala-spark-shell-example/
+
+/** map */
+var map = sc.textFile("/path/to/text/file").flatMap(line => line.split(" ")).map(word => (word,1));
+
+/** reduce */
+var counts = map.reduceByKey(_ + _);
+
+/** save the output to file */
+counts.saveAsTextFile("/path/to/output/")
+
+Install Jupyter on spark master
+
+sudo apt-get install python-dev python-pip python-numpy python-scipy python-pandas gfortran
+
+sudo pip install nose "ipython[notebook]"
+
