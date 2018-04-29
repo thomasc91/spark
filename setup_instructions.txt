@@ -1,38 +1,66 @@
-Steps for installing Spark
+Steps for installing JDK, Scala, Spark, Jupyter, 
 
 sudo apt-get update
 sudo apt-get install default-jdk
-
-install scala
 sudo apt-get install scala
+sudo apt-get install python-dev python-pip python-numpy python-scipy python-pandas gfortran 
+pip install jupyter pyspark findspark
 
 Download spark from apache website
 
-Unzip and move to /usr/lib/ with
+Unzip and move to /usr/local with
 
-tar xzvf spark-2.3.0-bin-hadoop2.7.tgz
+sudo tar zxvf/spark-* 
+sudo mv spark-* /usr/local/spark
 
-add java and spark paths to bashrc
 
-sudo nano ~/.bashrc
 
-Run spark 
-sudo ./spark-shell --master[4]
+add spark and pyspark paths to bashrc
 
-https://www.tutorialkart.com/apache-spark/scala-spark-shell-example/
+sudo gedit ~/.bashrc
 
-/** map */
-var map = sc.textFile("/path/to/text/file").flatMap(line => line.split(" ")).map(word => (word,1));
+export SPARK_HOME=/usr/local
+export PATH=$SPARK_HOME/bin:$PATH
+export PYSPARK_DRIVER_PYTHON=jupyter
+export PYSPARK_DRIVER_PYTHON_OPTS='notebook'
 
-/** reduce */
-var counts = map.reduceByKey(_ + _);
+pyspark
 
-/** save the output to file */
-counts.saveAsTextFile("/path/to/output/")
 
-Install Jupyter on spark master
+Spark GUI
+http://localhost:4040/jobs/
 
-sudo apt-get install python-dev python-pip python-numpy python-scipy python-pandas gfortran
 
-sudo pip install nose "ipython[notebook]"
+from pyspark.sql.types import *
+data_file = "/home/thomas/Downloads/RC_2015-01.bz2"
+raw_data = sc.textFile(data_file)
+df = sqlContext.read.json(raw_data, schema)
 
+
+fields = [StructField("archived", BooleanType(), True), 
+          StructField("author", StringType(), True), 
+          StructField("author_flair_css_class", StringType(), True), 
+          StructField("body", StringType(), True), 
+          StructField("controversiality", LongType(), True), 
+          StructField("created_utc", StringType(), True), 
+          StructField("distinguished", StringType(), True), 
+          StructField("downs", LongType(), True), 
+          StructField("edited", StringType(), True), 
+          StructField("gilded", LongType(), True), 
+          StructField("id", StringType(), True), 
+          StructField("link_id", StringType(), True), 
+          StructField("name", StringType(), True), 
+          StructField("parent_id", StringType(), True), 
+          StructField("retrieved_on", LongType(), True), 
+          StructField("score", LongType(), True), 
+          StructField("score_hidden", BooleanType(), True), 
+          StructField("subreddit", StringType(), True), 
+          StructField("subreddit_id", StringType(), True), 
+          StructField("ups", LongType(), True)] 
+		  
+schema = StructType(fields)
+df = sqlContext.createDataFrame(raw_data, schema)
+df_most_ups = df.select("author", "ups")
+df_most_ups.registerTempTable("most_ups")
+most_ups_query = sqlContext.sql("""SELECT author, sum(ups) as sum_ups FROM most_ups group by author order by sum_ups desc""")
+most_ups_query.take(5)
